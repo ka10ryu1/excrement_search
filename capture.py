@@ -9,7 +9,7 @@ import time
 import argparse
 import numpy as np
 
-import Tools.imgfunc as IMG
+import Tools.imgfunc as I
 import Tools.func as F
 
 
@@ -53,13 +53,18 @@ def getAverageImg(img):
 
     b, g, r = cv2.split(img)
     value = (ave(b), ave(g), ave(r))
-    return ave, IMG.blank(img.shape, value)
+    return ave, I.blank.blank(img.shape, value)
 
 
 def main(args):
     # カメラセッティング
     cap = cv2.VideoCapture(args.channel)
     num = 0
+    # cap.set(3, 200)
+    # cap.set(4, 200)
+    # cap.set(5, 5)
+
+    scale = [0.1, 10]
     while(True):
         # カメラキャプチャ
         ret, frame = cap.read()
@@ -67,20 +72,21 @@ def main(args):
             time.sleep(1)
             continue
 
-        # オリジナルイメージ
-        img1 = IMG.resize(frame, 0.5)
         # 画素を減らす
-        img2 = IMG.resize(frame, 0.05, cv2.INTER_CUBIC)
+        img2 = I.cnv.resize(frame, scale[0], cv2.INTER_CUBIC)
         # 便器（画像の白い部分）を黒く塗りつぶす
         img3 = white2black(img2)
         # 平均画像の値と生成
         val, aveImg = getAverageImg(img3)
 
         # 表示用画像をリサイズ
-        img2 = IMG.resize(img2, 10, cv2.INTER_CUBIC)
-        img3 = IMG.resize(img3, 10, cv2.INTER_CUBIC)
-        img4 = IMG.resize(aveImg, 10, cv2.INTER_CUBIC)
-        # print(img1.shape, img2.shape, img3.shape, img4.shape)
+        img1 = I.cnv.resize(frame, scale[0]*scale[1], cv2.INTER_CUBIC)
+        img2 = I.cnv.resize(img2, scale[1], cv2.INTER_CUBIC)
+        img3 = I.cnv.resize(img3, scale[1], cv2.INTER_CUBIC)
+        img4 = I.cnv.resize(aveImg, scale[1], cv2.INTER_CUBIC)
+        shape = img2.shape
+        img1 = img1[:shape[0], :shape[1], :shape[2]]
+        #print(img1.shape, img2.shape, img3.shape, img4.shape)
         # 表示用に画像を連結
         img = np.vstack([np.hstack([img1, img2]), np.hstack([img3, img4])])
         cv2.imshow('frame', img)
