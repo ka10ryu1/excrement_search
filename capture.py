@@ -27,8 +27,6 @@ def command():
 
 
 def white2black(img, thresh=125, max_val=250):
-    thresh = 125
-    max_val = 250
     mask = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, mask = cv2.threshold(
         cv2.bitwise_not(mask), thresh, max_val, cv2.THRESH_BINARY
@@ -43,17 +41,35 @@ def white2black(img, thresh=125, max_val=250):
 
 
 def getAverageImg(img):
-    def ave(img, thresh=50):
-        sum1 = np.sum(img)
-        sum2 = np.sum(img > thresh)
+    def ave(img, thresh=20):
+        sum1 = np.sum(img[img > thresh])
+        sum2 = len(img[img > thresh])
         if sum2 == 0:
             return 0
 
-        return np.min((250, int(sum1/sum2)))
+        return int(np.min((250, sum1//sum2)))
 
     b, g, r = cv2.split(img)
     value = (ave(b), ave(g), ave(r))
-    return ave, I.blank.blank(img.shape, value)
+    return value, I.blank.blank(img.shape, value)
+
+
+def getRedArea(img, split_size=4, ch=3, th_b=40, th_g=40, th_r=90):
+    imgs, split = I.cnv.splitSQ(img, split_size)
+    red = []
+    for i, e in enumerate(imgs):
+        b, g, r = cv2.split(e)
+        mul = np.multiply(np.multiply(b < th_b, g < th_g), r > th_r)
+        if np.sum(mul) == 0:
+            red.append(i)
+
+    if len(red) > 0:
+        for r in red:
+            imgs[r] = I.blank.black(split_size, split_size, ch)
+
+    buf = [np.vstack(imgs[i * split[0]: (i + 1) * split[0]])
+           for i in range(split[1])]
+    return np.hstack(buf)
 
 
 def main(args):
@@ -62,9 +78,9 @@ def main(args):
     num = 0
     # cap.set(3, 200)
     # cap.set(4, 200)
-    # cap.set(5, 5)
+    #cap.set(5, 10)
 
-    scale = [0.1, 10]
+    scale = [0.05, 10]
     while(True):
         # カメラキャプチャ
         ret, frame = cap.read()
@@ -78,17 +94,20 @@ def main(args):
         img3 = white2black(img2)
         # 平均画像の値と生成
         val, aveImg = getAverageImg(img3)
+        # 血便エリアの検出
+        redImg = getRedArea(img2)
 
         # 表示用画像をリサイズ
         img1 = I.cnv.resize(frame, scale[0]*scale[1], cv2.INTER_CUBIC)
-        img2 = I.cnv.resize(img2, scale[1], cv2.INTER_CUBIC)
+        #img2 = I.cnv.resize(img2, scale[1], cv2.INTER_CUBIC)
         img3 = I.cnv.resize(img3, scale[1], cv2.INTER_CUBIC)
         img4 = I.cnv.resize(aveImg, scale[1], cv2.INTER_CUBIC)
-        shape = img2.shape
+        img5 = I.cnv.resize(redImg, scale[1], cv2.INTER_CUBIC)
+        shape = img3.shape
         img1 = img1[:shape[0], :shape[1], :shape[2]]
-        #print(img1.shape, img2.shape, img3.shape, img4.shape)
+        # print(img1.shape, img2.shape, img3.shape, img4.shape)
         # 表示用に画像を連結
-        img = np.vstack([np.hstack([img1, img2]), np.hstack([img3, img4])])
+        img = np.vstack([np.hstack([img1, img3]), np.hstack([img5, img4])])
         cv2.imshow('frame', img)
 
         # キー入力判定
