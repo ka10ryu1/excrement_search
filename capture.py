@@ -74,7 +74,7 @@ def rgbMultplySum(img, th):
     return np.sum(mul)
 
 
-def getRedArea(img, split_size=4, ch=3, th_b=40, th_g=40, th_r=90, color=(255, 255, 0)):
+def getRedArea(img, split_size=4, ch=3, th_b=30, th_g=30, th_r=100, color=(255, 255, 0)):
     # 血便を検出するために画像を分割する
     imgs, split = I.cnv.splitSQ(img, split_size, w_rate=1)
     # 分割した画像に対して
