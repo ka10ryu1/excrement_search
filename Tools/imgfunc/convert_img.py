@@ -185,7 +185,7 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE, w_rate=0.2):
         return np.array(out_imgs), (split[0], split[1])
 
 
-def vhstack(imgs, vh_size, img_size):
+def vhstack(imgs, vh_size, img_size=None):
     """
     splitSQ(N)された画像リストを連結する
     [in]  imgs:     splitSQ(N)された画像リスト
@@ -196,7 +196,11 @@ def vhstack(imgs, vh_size, img_size):
 
     buf = [np.vstack(imgs[i * vh_size[0]: (i + 1) * vh_size[0]])
            for i in range(vh_size[1])]
-    return np.hstack(buf)[:img_size[0], :img_size[1]]
+
+    if img_size is None:
+        return np.hstack(buf)
+    else:
+        return np.hstack(buf)[:img_size[0], :img_size[1]]
 
 
 def rotate(img, angle, scale, border=(0, 0, 0)):
