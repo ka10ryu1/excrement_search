@@ -15,12 +15,16 @@ import Tools.func as F
 
 def command():
     parser = argparse.ArgumentParser(description=help)
-    parser.add_argument('--channel', '-c', type=int, default=0,
+    parser.add_argument('-c', '--channel', type=int, default=0,
                         help='使用するWebカメラのチャンネル [default: 0]')
+    parser.add_argument('-w', '--white_threshold', type=int, default=175,
+                        help='便器しきい値 [default: 175]')
     parser.add_argument('-o', '--out_path', default='./capture/',
                         help='画像の保存先 (default: ./capture/)')
-    parser.add_argument('--img_rate', '-r', type=float, default=1,
+    parser.add_argument('-r', '--img_rate', type=float, default=1,
                         help='表示する画像サイズの倍率 [default: 1]')
+    parser.add_argument('--lower', action='store_true',
+                        help='select timeoutが発生する場合に画質を落とす')
     args = parser.parse_args()
     F.argsPrint(args)
     return args
@@ -44,6 +48,7 @@ def white2black(img, thresh=125, max_val=250):
 
 def getAverageImg(img):
     # 画像の平均値とそれを可視化した画像を返す
+    # ほぼ黒(20以下)の画素に対して計算する
     def ave(img, thresh=20):
         sum1 = np.sum(img[img > thresh])
         sum2 = len(img[img > thresh])
@@ -86,11 +91,13 @@ def main(args):
     # カメラセッティング
     cap = cv2.VideoCapture(args.channel)
     num = 0
-    cap.set(3, 200)
-    cap.set(4, 200)
-    cap.set(5, 5)
+    scale = (0.05, 10)
+    if args.lower:
+        cap.set(3, 200)
+        cap.set(4, 200)
+        cap.set(5, 5)
+        scale = (0.1, 10)
 
-    scale = [0.1, 10]
     while(True):
         # カメラキャプチャ
         ret, frame = cap.read()
@@ -101,7 +108,7 @@ def main(args):
         # 画素を減らす
         img2 = I.cnv.resize(frame, scale[0], cv2.INTER_CUBIC)
         # 便器（画像の白い部分）を黒く塗りつぶす
-        img3 = white2black(img2)
+        img3 = white2black(img2, args.white_threshold)
         # 平均画像の値と生成
         val, aveImg = getAverageImg(img3)
         # 血便エリアの検出
@@ -128,12 +135,7 @@ def main(args):
             break
         # sキーで画像を保存する
         elif key == ord('s'):
-            name = F.getFilePath(
-                args.out_path, 'cap-' + str(num).zfill(5), '.jpg'
-            )
-            num += 1
-            print('capture!', name)
-            cv2.imwrite(name, img)
+            print('capture!', I.io.write(args.out_path, 'cap-', img))
 
     # 終了処理
     cap.release()
