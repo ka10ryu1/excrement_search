@@ -90,7 +90,6 @@ def getRedArea(img, split_size=4, ch=3, th_b=40, th_g=40, th_r=90, color=(255, 2
 def main(args):
     # カメラセッティング
     cap = cv2.VideoCapture(args.channel)
-    num = 0
     scale = (0.05, 10)
     if args.lower:
         cap.set(3, 200)
@@ -124,7 +123,7 @@ def main(args):
         img1 = img1[:shape[0], :shape[1], :shape[2]]
         # print(img1.shape, img2.shape, img3.shape, img4.shape, img5.shape)
         # 表示用に画像を連結
-        img = np.vstack([np.hstack([img1, img3]), np.hstack([img5, img4])])
+        img = I.cnv.vhstack([img1, img5, img3, img4], (2, 2))
         cv2.imshow('frame', img)
 
         # キー入力判定
