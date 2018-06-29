@@ -158,6 +158,7 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE, w_rate=0.2):
     [in]  size:      正方形のサイズ（size x size）
     [in]  round_num: 丸める画像数
     [in]  flg:       境界線のフラグ
+    [in]  w_rate:    作成する画像に対する余白の割合
     [out] out_imgs:  分割されたnp.array形式の正方形画像リスト
     [out] split:     縦横の分割情報
     """
