@@ -55,32 +55,31 @@ def getAverageImg(img):
 
 
 def getRedArea(img, split_size=4, ch=3, th_b=40, th_g=40, th_r=90):
-    imgs, split = I.cnv.splitSQ(img, split_size)
+    imgs, split = I.cnv.splitSQ(img, split_size, w_rate=1)
     red = []
     for i, e in enumerate(imgs):
         b, g, r = cv2.split(e)
         mul = np.multiply(np.multiply(b < th_b, g < th_g), r > th_r)
-        if np.sum(mul) == 0:
+        if np.sum(mul) > 0:
             red.append(i)
 
     if len(red) > 0:
         for r in red:
-            imgs[r] = I.blank.black(split_size, split_size, ch)
+            ra = cv2.rectangle(imgs[r], (0, 0), (3, 3), (255, 255, 0))
+            imgs[r] = ra
 
-    buf = [np.vstack(imgs[i * split[0]: (i + 1) * split[0]])
-           for i in range(split[1])]
-    return np.hstack(buf)
+    return I.cnv.hvstack(imgs, split, img.shape)
 
 
 def main(args):
     # カメラセッティング
     cap = cv2.VideoCapture(args.channel)
     num = 0
-    # cap.set(3, 200)
-    # cap.set(4, 200)
-    #cap.set(5, 10)
+    cap.set(3, 200)
+    cap.set(4, 200)
+    cap.set(5, 5)
 
-    scale = [0.05, 10]
+    scale = [0.1, 10]
     while(True):
         # カメラキャプチャ
         ret, frame = cap.read()
@@ -99,13 +98,13 @@ def main(args):
 
         # 表示用画像をリサイズ
         img1 = I.cnv.resize(frame, scale[0]*scale[1], cv2.INTER_CUBIC)
-        #img2 = I.cnv.resize(img2, scale[1], cv2.INTER_CUBIC)
+        # img2 = I.cnv.resize(img2, scale[1], cv2.INTER_CUBIC)
         img3 = I.cnv.resize(img3, scale[1], cv2.INTER_CUBIC)
         img4 = I.cnv.resize(aveImg, scale[1], cv2.INTER_CUBIC)
         img5 = I.cnv.resize(redImg, scale[1], cv2.INTER_CUBIC)
         shape = img3.shape
         img1 = img1[:shape[0], :shape[1], :shape[2]]
-        # print(img1.shape, img2.shape, img3.shape, img4.shape)
+        # print(img1.shape, img2.shape, img3.shape, img4.shape, img5.shape)
         # 表示用に画像を連結
         img = np.vstack([np.hstack([img1, img3]), np.hstack([img5, img4])])
         cv2.imshow('frame', img)
