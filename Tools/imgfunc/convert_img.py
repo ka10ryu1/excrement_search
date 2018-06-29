@@ -158,7 +158,6 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE, w_rate=0.2):
     [in]  size:      正方形のサイズ（size x size）
     [in]  round_num: 丸める画像数
     [in]  flg:       境界線のフラグ
-    [in]  w_rate:    作成する画像に対する余白の割合
     [out] out_imgs:  分割されたnp.array形式の正方形画像リスト
     [out] split:     縦横の分割情報
     """
@@ -184,6 +183,20 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE, w_rate=0.2):
         return np.array(out_imgs[:round_len]), (split[0], split[1])
     else:
         return np.array(out_imgs), (split[0], split[1])
+
+
+def vhstack(imgs, vh_size, img_size):
+    """
+    splitSQ(N)された画像リストを連結する
+    [in]  imgs:     splitSQ(N)された画像リスト
+    [in]  vh_size:  splitSQ(N)時に作成された縦横画像枚数
+    [in]  img_size: 本来の画像サイズ
+    [out] 連結された元サイズの画像
+    """
+
+    buf = [np.vstack(imgs[i * vh_size[0]: (i + 1) * vh_size[0]])
+           for i in range(vh_size[1])]
+    return np.hstack(buf)[:img_size[0], :img_size[1]]
 
 
 def rotate(img, angle, scale, border=(0, 0, 0)):
