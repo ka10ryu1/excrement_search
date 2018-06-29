@@ -91,12 +91,14 @@ def main(args):
     # カメラセッティング
     cap = cv2.VideoCapture(args.channel)
     scale = (0.05, 10)
+    w_th = args.white_threshold
     if args.lower:
         cap.set(3, 200)
         cap.set(4, 200)
         cap.set(5, 5)
         scale = (0.1, 10)
 
+    print('white threshold: {}'.format(w_th))
     while(True):
         # カメラキャプチャ
         ret, frame = cap.read()
@@ -107,7 +109,7 @@ def main(args):
         # 画素を減らす
         img2 = I.cnv.resize(frame, scale[0], cv2.INTER_CUBIC)
         # 便器（画像の白い部分）を黒く塗りつぶす
-        img3 = white2black(img2, args.white_threshold)
+        img3 = white2black(img2, w_th)
         # 平均画像の値と生成
         val, aveImg = getAverageImg(img3)
         # 血便エリアの検出
@@ -135,6 +137,12 @@ def main(args):
         # sキーで画像を保存する
         elif key == ord('s'):
             print('capture!', I.io.write(args.out_path, 'cap-', img))
+        elif key == ord('w'):
+            w_th += 5
+            print('white threshold: {}'.format(w_th))
+        elif key == ord('x'):
+            w_th -= 5
+            print('white threshold: {}'.format(w_th))
 
     # 終了処理
     cap.release()
