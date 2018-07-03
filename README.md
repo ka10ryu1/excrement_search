@@ -14,9 +14,6 @@
 - **pip** 10.0.1
 - **numpy** 1.13.0
 - **opencv-python** 3.4.1.15
-- **chainer** 4.1.0
-- **cupy** None
-- **ideep4py** 1.0.4
 - **matplotlib** 2.2.2
 - **Pillow** 5.1.0
 
