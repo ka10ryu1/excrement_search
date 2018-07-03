@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = 'Webカメラから画像を取得する'
+help = '取得した画像に関する変換など'
 #
 
 import cv2
