@@ -83,15 +83,15 @@ def getRect(img, th_1=50, th_2=255, color=(0, 255, 255), line_w=1):
     cnt_img, contours, hierarchy = cv2.findContours(
         bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
-    num = 0
+    shape = []
     for cnt in contours:
-        area = cv2.contourArea(cnt)
+        area = int(cv2.contourArea(cnt))
         if area > area_max or area_min > area:
             continue
 
+        shape.append(area)
         if len(cnt) > 0:
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(img, (x, y), (x+w, y+h), color, line_w)
-            num += 1
 
-    return num, img
+    return shape, img

@@ -58,7 +58,7 @@ def main(args):
         # 血便エリアの検出
         #redImg = C.getRedArea(img2)
         # 成果物の位置と数を検出
-        exc_num, rectImg = C.getRect(img3.copy())
+        exc_shape, rectImg = C.getRect(img3.copy())
 
         # 表示用画像をリサイズ
         img1 = I.cnv.resize(frame, scale[0]*scale[1], cv2.INTER_CUBIC)
@@ -73,6 +73,7 @@ def main(args):
         # 表示用に画像を連結
         img = I.cnv.vhstack([img1, img5, img3, img4], (2, 2))
         cv2.imshow('frame', img)
+        print('color: {}, num: {}'.format(val, exc_shape))
 
         # キー入力判定
         key = cv2.waitKey(20) & 0xff
