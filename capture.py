@@ -33,13 +33,13 @@ def command():
 def main(args):
     # カメラセッティング
     cap = cv2.VideoCapture(args.channel)
-    scale = (0.05, 10)
+    scale = (0.10, 5)
     w_th = args.white_threshold
     if args.lower:
         cap.set(3, 200)
         cap.set(4, 200)
         cap.set(5, 5)
-        scale = (0.1, 10)
+        scale = (0.5, 5)
 
     print('white threshold: {}'.format(w_th))
     while(True):
@@ -56,14 +56,17 @@ def main(args):
         # 平均画像の値と生成
         val, aveImg = C.getAverageImg(img3)
         # 血便エリアの検出
-        redImg = C.getRedArea(img2)
+        #redImg = C.getRedArea(img2)
+        # 成果物の位置と数を検出
+        exc_num, rectImg = C.getRect(img3.copy())
 
         # 表示用画像をリサイズ
         img1 = I.cnv.resize(frame, scale[0]*scale[1], cv2.INTER_CUBIC)
         # img2 = I.cnv.resize(img2, scale[1], cv2.INTER_CUBIC)
         img3 = I.cnv.resize(img3, scale[1], cv2.INTER_CUBIC)
         img4 = I.cnv.resize(aveImg, scale[1], cv2.INTER_CUBIC)
-        img5 = I.cnv.resize(redImg, scale[1], cv2.INTER_CUBIC)
+        # img5 = I.cnv.resize(redImg, scale[1], cv2.INTER_CUBIC)
+        img5 = I.cnv.resize(rectImg, scale[1], cv2.INTER_CUBIC)
         shape = img3.shape
         img1 = img1[:shape[0], :shape[1], :shape[2]]
         # print(img1.shape, img2.shape, img3.shape, img4.shape, img5.shape)
