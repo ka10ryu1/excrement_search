@@ -73,7 +73,6 @@ def main(args):
         # 表示用に画像を連結
         img = I.cnv.vhstack([img1, img5, img3, img4], (2, 2))
         cv2.imshow('frame', img)
-        print('color: {}, num: {}'.format(val, exc_shape))
 
         # キー入力判定
         key = cv2.waitKey(20) & 0xff
@@ -90,6 +89,8 @@ def main(args):
         elif key == ord('x'):
             w_th -= 5
             print('white threshold: {}'.format(w_th))
+        elif key == ord('a'):
+            print('color: {}, num: {}'.format(val, exc_shape))
 
     # 終了処理
     cap.release()
@@ -99,5 +100,8 @@ def main(args):
 if __name__ == '__main__':
     print('Key bindings')
     print('[Esc] Exit')
+    print('[ w ] White threshold UP')
+    print('[ a ] Get value')
     print('[ s ] Save image')
+    print('[ x ] White threshold DOWN')
     main(command())
