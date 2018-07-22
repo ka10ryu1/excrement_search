@@ -19,6 +19,7 @@ class VideoCap(cv2.VideoCapture):
     def __init__(self, usb_ch, width=640, height=480, img_ch=3, lower=False, cap_num=6, interval=0.5, w_th=175):
         self._cap = cv2.VideoCapture(usb_ch)
         self.white_threshold = w_th
+        self.exc_shape = []
         if lower:
             self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, 200)
             self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 200)
@@ -31,6 +32,7 @@ class VideoCap(cv2.VideoCapture):
 
         # 表示・保存用画像の格納先を確保
         self._frame = I.blank.black(self.size)
+        self._avrg =  I.blank.black(self.size)
         self._rect =  I.blank.black(self.size)
         # 保存する画像のチャンネル数
         self.ch = self.size[2]
@@ -78,12 +80,25 @@ class VideoCap(cv2.VideoCapture):
     def white_th_dw(self):
         self.white_th(-5)
 
-    def getRect(self):
+    def getRectAndColor(self):
         img = I.cnv.resize(self._frame, 0.1)
-        img = C.white2black(img, self.white_threshold)
-        exc_shape, rectImg = C.getRect(img)
+        w2b = C.white2black(img, self.white_threshold)
+        val, aveImg = C.getAverageImg(w2b)
+        self.ave_color = (val[2], val[1], val[0])
+        self._avrg = I.cnv.resize(aveImg,5)
+        exc_shape, rectImg = C.getRect(w2b)
         self._rect = I.cnv.resize(rectImg,5)
-        return self._rect
+        self._rect = I.cnv.resize(rectImg,5)
+        self.exc_shape = exc_shape
+
+    def imgs(self):
+        return np.hstack([I.cnv.resize(self._frame,0.5), self._rect,self._avrg])
+
+    def value(self):
+        num = str(len(self.exc_shape))
+        size = str(np.max(self.exc_shape))
+        color = str(self.ave_color)
+        return color + '/' + num + '(' + size + ')'
     
     def intervalCheck(self):
         """
