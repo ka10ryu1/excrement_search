@@ -94,4 +94,4 @@ def getRect(img, th_1=50, th_2=255, color=(0, 255, 255), line_w=1):
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(img, (x, y), (x+w, y+h), color, line_w)
 
-    return shape, img
+    return (len(shape), np.max(shape)), img
