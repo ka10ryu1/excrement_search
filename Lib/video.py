@@ -11,6 +11,7 @@ import numpy as np
 import Tools.imgfunc as I
 import Lib.color_trans as C
 
+
 class VideoCap(cv2.VideoCapture):
     """
     USBカメラの処理をクラス化したもの
@@ -32,8 +33,8 @@ class VideoCap(cv2.VideoCapture):
 
         # 表示・保存用画像の格納先を確保
         self._frame = I.blank.black(self.size)
-        self._avrg =  I.blank.black(self.size)
-        self._rect =  I.blank.black(self.size)
+        self._avrg = I.blank.black(self.size)
+        self._rect = I.blank.black(self.size)
         # 保存する画像のチャンネル数
         self.ch = self.size[2]
         # キャプチャ画像のサイズ情報
@@ -46,6 +47,12 @@ class VideoCap(cv2.VideoCapture):
         self._write_time = 0
         # タイマー起動
         self._start = time.time()
+
+    def status(self):
+        print('<frame>')
+        print('- width:\t', self._cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        print('- height:\t', self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        print('- fps:\t', self._cap.get(5))
 
     def read(self):
         """
@@ -67,16 +74,16 @@ class VideoCap(cv2.VideoCapture):
         """
         現在のフレームの取得
         """
-        
+
         return I.cnv.resize(self._frame, rate)
 
-    def white_th(self,val):
+    def white_th(self, val):
         self.white_threshold += val
-        print('wthite threshold:',self.white_threshold)
-    
+        print('wthite threshold:', self.white_threshold)
+
     def white_th_up(self):
         self.white_th(5)
-        
+
     def white_th_dw(self):
         self.white_th(-5)
 
@@ -85,21 +92,22 @@ class VideoCap(cv2.VideoCapture):
         w2b = C.white2black(img, self.white_threshold)
         val, aveImg = C.getAverageImg(w2b)
         self.ave_color = (val[2], val[1], val[0])
-        self._avrg = I.cnv.resize(aveImg,5)
+        self._avrg = I.cnv.resize(aveImg, 5)
         exc_shape, rectImg = C.getRect(w2b)
-        self._rect = I.cnv.resize(rectImg,5)
-        self._rect = I.cnv.resize(rectImg,5)
+        self._rect = I.cnv.resize(rectImg, 5)
+        self._rect = I.cnv.resize(rectImg, 5)
         self.exc_shape = exc_shape
 
     def imgs(self):
-        return np.hstack([I.cnv.resize(self._frame,0.5), self._rect,self._avrg])
+        # return np.hstack([I.cnv.resize(self._frame, 0.5), self._rect, self._avrg])
+        return I.cnv.vhstack([I.cnv.resize(self._frame, 0.5), self._rect, self._avrg])
 
     def value(self):
         num = str(len(self.exc_shape))
         size = str(np.max(self.exc_shape))
         color = str(self.ave_color)
         return color + '/' + num + '(' + size + ')'
-    
+
     def intervalCheck(self):
         """
         インターバル撮影の確認
@@ -125,9 +133,8 @@ class VideoCap(cv2.VideoCapture):
         return I.cnv.resize(I.cnv.vhstack(imgs, size), resize)
 
     def write(self, out_path):
-        img = np.vstack([I.cnv.resize(self._frame,0.5), self._rect])
+        img = np.vstack([I.cnv.resize(self._frame, 0.5), self._rect])
         return I.io.write(out_path, 'cap-', img)
-        
 
     def release(self):
         """
