@@ -99,7 +99,6 @@ class VideoCap(cv2.VideoCapture):
         self.exc_shape = exc_shape
 
     def imgs(self):
-        # return np.hstack([I.cnv.resize(self._frame, 0.5), self._rect, self._avrg])
         return I.cnv.vhstack([I.cnv.resize(self._frame, 0.5), self._rect, self._avrg])
 
     def value(self):

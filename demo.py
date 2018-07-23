@@ -5,11 +5,10 @@ from Lib.window import Window
 
 txt = {
     'top': 'EXCREMENT SEARCH',
-    'camera': 'Video capture (<Escape> Quit, <Enter> Capture)',
+    'camera': 'Video capture\n  -  <Escape> Quit\n  -  <Enter> Capture\n  -  <Up>/<Down> white threshold change',
     'status_none': 'get data ...',
     'status_write': 'write'
 }
-
 
 if __name__ == '__main__':
     w = Window(txt, lower=True)

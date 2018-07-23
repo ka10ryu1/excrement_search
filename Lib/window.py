@@ -20,17 +20,14 @@ class Window:
         self.root.bind('<Down>', lambda e: self.cap.white_th_dw())
         self.root.title(txt['top'])
 
-        tk.Label(text=txt['camera']).grid(row=0, column=0, sticky=tk.W)
+        tk.Label(text=txt['camera'], justify='left').grid(row=0, column=0)
 
         self.lmain = tk.Label(self.root)
-        self.lmain.grid(
-            row=1, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W+tk.E
-        )
+        self.lmain.grid(row=1, column=0)
 
         self.status_txt = tk.StringVar()
         self.status_txt.set(txt['status_none'])
-        status = tk.Label(self.root, textvariable=self.status_txt)
-        status.grid(row=3, column=1, sticky=tk.W)
+        tk.Label(self.root, textvariable=self.status_txt).grid(row=2, column=0)
 
     def _cv2pillow(self, img):
         cv2image = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
@@ -54,7 +51,7 @@ class Window:
     def changeLabel(self):
         if self.eval_txt1.get() == self.txt['none']:
             colordiff = self.chechk_color(self.cap.ave_color)
-            #colordiff = self.chechk_color((140,70,70))
+            # colordiff = self.chechk_color((140,70,70))
             pt = 100/colordiff
             print(pt)
             self.eval_txt1.set(self.cap.value())
