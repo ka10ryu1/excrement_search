@@ -13,6 +13,7 @@ import Tools.func as F
 class Window:
     def __init__(self, txt, width=640, height=480, lower=False, out_path='./data'):
         self.txt = txt
+        self.trueVal = (140, 70, 70)
         self.cap = VideoCap(0, width=width, height=height, lower=lower)
         print(self.cap.status())
         self.root = tk.Tk()
@@ -54,19 +55,25 @@ class Window:
 
     def write(self):
         self.cap.getRectAndColor()
-        path = F.getFilePath(self.out_path, 'param', '.txt')
-        trueVal = (140, 70, 70)
-        with open(path, 'w') as f:
-            f.write(str(trueVal) + '\n')
-            f.write(str(self.cap.ave_color) + '\n')
-            f.write(str(self.cap.exc_shape) + '\n')
-
+        self.writeTxt()
+        # self.writeJson()
         self.num = 0
 
-    def chechk_color(self, color):
-        print(trueVal, color)
-        diff_pow = [(i - j)**2 for i, j in zip(trueVal, color)]
-        return np.max([1, np.sum(diff_pow)**0.5])
+    def writeJson(self):
+        param = {
+            'true value': self.trueVal,
+            'ave color': self.cap.ave_color,
+            'exc shape': self.cap.exc_shape,
+        }
+        print(param)
+        F.dict2json(self.out_path, 'param', param)
+
+    def writeTxt(self):
+        path = F.getFilePath(self.out_path, 'param', '.txt')
+        with open(path, 'w') as f:
+            f.write(str(self.trueVal) + '\n')
+            f.write(str(self.cap.ave_color) + '\n')
+            f.write(str(self.cap.exc_shape) + '\n')
 
     def changeLabel(self, num):
         if num == 0:

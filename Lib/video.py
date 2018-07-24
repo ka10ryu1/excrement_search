@@ -96,7 +96,7 @@ class VideoCap(cv2.VideoCapture):
         exc_shape, rectImg = C.getRect(w2b)
         self._rect = I.cnv.resize(rectImg, 5)
         self._rect = I.cnv.resize(rectImg, 5)
-        self.exc_shape = exc_shape
+        self.exc_shape = (len(exc_shape), int(np.max(exc_shape)))
 
     def imgs(self):
         return I.cnv.vhstack([I.cnv.resize(self._frame, 0.5), self._rect, self._avrg])
