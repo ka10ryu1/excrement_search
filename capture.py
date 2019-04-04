@@ -156,8 +156,8 @@ def main(args):
 if __name__ == '__main__':
     print('Key bindings')
     print('[Esc] Exit')
-    print('[ w ] White threshold UP')
-    print('[ a ] Get value')
-    print('[ s ] Save image')
-    print('[ x ] White threshold DOWN')
+    print('[ q ] Change top image')
+    print('[ a ] Change middle image')
+    print('[ z ] Change bottom image')
+    print('[ s ] Reset')
     main(command())
