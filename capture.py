@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,invalid-name
 import time
 import argparse
 import cv2
@@ -98,8 +98,8 @@ def main(args):
         # カメラキャプチャ
         try:
             ret, frame = cap.read()
-        except:
-            print('except')
+        except Exception as e:
+            print('except', e)
             time.sleep(1)
             continue
 
