@@ -67,17 +67,17 @@ def get_avg_color(img, mask, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLE
 
 def main(args):
     # カメラセッティング
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_V4L)
     rate = args.rate
     if args.lower:
         print('MODE: LOW')
         cap.set(3, 200)
         cap.set(4, 200)
         cap.set(5, 5)
-        rate = 0.8
+        # rate = 0.8
 
     A, B, C, D = 0, 1, 2, 3
-    txt = ('RGB color', 'Blue', 'Green', 'Red')
+    txt = ('RGB', 'Mono', 'Contour', 'Average')
     st = time.time()
     imgs = [0, 0, 0, 0]
     bk = None
@@ -101,7 +101,7 @@ def main(args):
         b, g, r = cv2.split(frame)
         if bk is None:
             bk = np.zeros_like(b, dtype=np.uint8)
-            v_img = vline(frame, 1)
+            v_img = vline(frame, 3)
 
         imgs[0] = frame
         white = get_white(frame, args.white_thresh, 255)
@@ -111,7 +111,7 @@ def main(args):
 
         print('+{:.3f}: imgs'.format((time.time() - st) * 1000))
 
-        img1 = add_text(resize(imgs[A], 2.8), txt[A], 31)
+        img1 = add_text(resize(imgs[A], 2.8), txt[A], 35)
         img2 = np.vstack([
             imgs[B],
             v_img,
@@ -121,12 +121,12 @@ def main(args):
         ])
 
         if h_img is None:
-            h_img = hline(img1, 1)
+            h_img = hline(img1, 5)
 
         print('+{:.3f}: fix'.format((time.time() - st) * 1000))
 
         # print(img1.shape, img2.shape, mini1.shape)
-        img = np.hstack([img1, h_img, img2])
+        img = np.hstack([h_img, img1, h_img, img2, h_img])
         fullscreen('frame', resize(img, rate))
 
         print('+{:.3f}: view'.format((time.time() - st) * 1000))

@@ -8,7 +8,9 @@ import numpy as np
 
 
 def command():
-    parser = argparse.ArgumentParser(description=help)
+    parser = argparse.ArgumentParser(description='USB Camera Test')
+    parser.add_argument('--id', type=int, default=0,
+                        help='USB Camera ID [default: 0]')
     parser.add_argument('--rate', type=float, default=1,
                         help='表示する画像サイズの倍率 [default: 1]')
     parser.add_argument('--lower', action='store_true',
@@ -34,7 +36,7 @@ def fullscreen(winname, img):
 
 def add_text(img, text, h, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX):
     bk = vline(img, h)
-    cv2.putText(bk, text, (5, h - 5), font, 1, color, 1, cv2.LINE_AA)
+    cv2.putText(bk, text, (10, h - 10), font, 1, color, 1, cv2.LINE_AA)
     dst = np.vstack([img, bk])
     return dst
 
@@ -78,7 +80,7 @@ def select_key(A, B, C, D, w_time=5):
 
 def main(args):
     # カメラセッティング
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(args.id,cv2.CAP_V4L)
     rate = args.rate
     if args.lower:
         print('MODE: LOW')
@@ -103,10 +105,10 @@ def main(args):
             time.sleep(1)
             continue
 
-        if not ret:
-            print('not ret')
-            time.sleep(1)
-            continue
+#        if not ret:
+#            print('not ret')
+#            time.sleep(1)
+#            continue
 
         print('+{:.3f}: cap'.format((time.time() - st) * 1000))
         b, g, r = cv2.split(frame)
