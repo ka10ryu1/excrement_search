@@ -26,7 +26,7 @@ def resize(img, rate, flg=cv2.INTER_NEAREST):
     return cv2.resize(img, size, flg)
 
 
-def fullscreen(winname, img):
+def full_screen(winname, img):
     cv2.namedWindow(winname, cv2.WINDOW_NORMAL)
     cv2.setWindowProperty(
         winname, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
@@ -80,7 +80,7 @@ def select_key(A, B, C, D, w_time=5):
 
 def main(args):
     # カメラセッティング
-    cap = cv2.VideoCapture(args.id,cv2.CAP_V4L)
+    cap = cv2.VideoCapture(args.id, cv2.CAP_V4L)
     rate = args.rate
     if args.lower:
         print('MODE: LOW')
@@ -139,7 +139,7 @@ def main(args):
 
         # print(img1.shape, img2.shape, mini1.shape)
         img = np.hstack([img1, h_img, img2])
-        fullscreen('frame', resize(img, rate))
+        full_screen('frame', resize(img, rate))
 
         print('+{:.3f}: view'.format((time.time() - st) * 1000))
 
