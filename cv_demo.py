@@ -6,7 +6,7 @@ import argparse
 import cv2
 import numpy as np
 
-from capture import resize, fullscreen, add_text, vline, hline, select_key
+from capture import resize, full_screen, add_text, vline, hline, select_key
 
 
 def command():
@@ -28,12 +28,28 @@ def get_white(img, lower, upper):
     bg = cv2.bitwise_and(b, g)
     bgr = cv2.bitwise_and(bg, r)
     bgr = cv2.bitwise_not(bgr)
-    return cv2.merge([bgr, bgr, bgr])
+    return bgr
 
 
-def get_contours(src, mask, k_size=3, sum_max=3600, num=5,
+def get_red(img, th1=40, th2=50, th3=30):
+    def _get_hsv(_img, _lower, _upper):
+        _img = cv2.cvtColor(_img, cv2.COLOR_BGR2HSV_FULL)
+        _img = cv2.inRange(_img, _lower, _upper)
+        return _img
+
+    lower = np.array([0, th1, th2])
+    upper = np.array([th3, 255, 255])
+    img1 = _get_hsv(img, lower, upper)
+
+    lower = np.array([225, th1, th2])
+    upper = np.array([255, 255, 255])
+    img2 = _get_hsv(img, lower, upper)
+
+    return img1 + img2
+
+
+def get_contours(src, mask, k_size=3, sum_max=5000, num=5,
                  color=(0, 255, 255), thickness=2):
-    mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     kernel = np.ones((k_size, k_size), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     contours = cv2.findContours(
@@ -48,21 +64,16 @@ def get_contours(src, mask, k_size=3, sum_max=3600, num=5,
 
 
 def get_avg_color(img, mask, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX):
-    mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     masked = cv2.bitwise_and(img, img, mask=mask)
     b, g, r = cv2.split(masked)
     b_val = int(np.mean(b))
     g_val = int(np.mean(g))
     r_val = int(np.mean(r))
-    b.fill(b_val)
-    g.fill(g_val)
-    r.fill(r_val)
-    bgr = cv2.merge([b, g, r])
     text = 'B:{}, G:{}, R:{}'.format(b_val, g_val, r_val)
     h, w, ch = img.shape
     bk = np.zeros((h * 2, w * 2, ch), dtype=np.uint8)
     cv2.putText(bk, text, (5, h * 2 - 10), font, 1, color, 1, cv2.LINE_AA)
-    return cv2.add(bgr, resize(bk, 0.5))
+    return cv2.add(img, resize(bk, 0.5))
 
 
 def main(args):
@@ -74,7 +85,6 @@ def main(args):
         cap.set(3, 200)
         cap.set(4, 200)
         cap.set(5, 5)
-        # rate = 0.8
 
     A, B, C, D = 0, 1, 2, 3
     txt = ('RGB', 'Mono', 'Contour', 'Average')
@@ -104,10 +114,12 @@ def main(args):
             v_img = vline(frame, 3)
 
         imgs[0] = frame
-        white = get_white(frame, args.white_thresh, 255)
-        imgs[1] = white
-        imgs[2] = get_contours(frame, white)
-        imgs[3] = get_avg_color(frame, white)
+        dilate = cv2.dilate(frame, np.ones((5, 5), dtype=np.uint8))
+        white = get_white(dilate, args.white_thresh, 255)
+        red = get_red(dilate)
+        imgs[1] = cv2.merge([white, bk, red])
+        imgs[2] = get_avg_color(get_contours(frame, white), white)
+        imgs[3] = get_avg_color(get_contours(frame, red), red)
 
         print('+{:.3f}: imgs'.format((time.time() - st) * 1000))
 
@@ -125,9 +137,8 @@ def main(args):
 
         print('+{:.3f}: fix'.format((time.time() - st) * 1000))
 
-        # print(img1.shape, img2.shape, mini1.shape)
         img = np.hstack([h_img, img1, h_img, img2, h_img])
-        fullscreen('frame', resize(img, rate))
+        full_screen('frame', resize(img, rate))
 
         print('+{:.3f}: view'.format((time.time() - st) * 1000))
 
