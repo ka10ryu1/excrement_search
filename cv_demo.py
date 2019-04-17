@@ -31,24 +31,24 @@ def get_white(img, lower, upper):
     return bgr
 
 
-def get_red(img, th1=40, th2=50, th3=30):
+def get_red(img, h1=10, h2=210, s1=130, v1=80):
     def _get_hsv(_img, _lower, _upper):
         _img = cv2.cvtColor(_img, cv2.COLOR_BGR2HSV_FULL)
         _img = cv2.inRange(_img, _lower, _upper)
         return _img
 
-    lower = np.array([0, th1, th2])
-    upper = np.array([th3, 255, 255])
+    lower = np.array([0, s1, v1])
+    upper = np.array([h1, 255, 255])
     img1 = _get_hsv(img, lower, upper)
 
-    lower = np.array([225, th1, th2])
+    lower = np.array([h2, s1, v1])
     upper = np.array([255, 255, 255])
     img2 = _get_hsv(img, lower, upper)
 
     return img1 + img2
 
 
-def get_contours(src, mask, k_size=3, sum_max=5000, num=5,
+def get_contours(src, mask, k_size=3, sum_max=8000, num=5,
                  color=(0, 255, 255), thickness=2):
     kernel = np.ones((k_size, k_size), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
@@ -73,7 +73,7 @@ def get_avg_color(img, mask, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLE
     h, w, ch = img.shape
     bk = np.zeros((h * 2, w * 2, ch), dtype=np.uint8)
     cv2.putText(bk, text, (5, h * 2 - 10), font, 1, color, 1, cv2.LINE_AA)
-    return cv2.add(img, resize(bk, 0.5))
+    return cv2.add(masked, resize(bk, 0.5))
 
 
 def main(args):
@@ -87,7 +87,7 @@ def main(args):
         cap.set(5, 5)
 
     A, B, C, D = 0, 1, 2, 3
-    txt = ('RGB', 'Mono', 'Contour', 'Average')
+    txt = ('RGB', 'B->White, R->Red', 'White contour', 'Red contour')
     st = time.time()
     imgs = [0, 0, 0, 0]
     bk = None
@@ -114,12 +114,12 @@ def main(args):
             v_img = vline(frame, 3)
 
         imgs[0] = frame
-        dilate = cv2.dilate(frame, np.ones((5, 5), dtype=np.uint8))
+        dilate = cv2.dilate(frame, np.ones((3, 3), dtype=np.uint8))
         white = get_white(dilate, args.white_thresh, 255)
         red = get_red(dilate)
         imgs[1] = cv2.merge([white, bk, red])
         imgs[2] = get_avg_color(get_contours(frame, white), white)
-        imgs[3] = get_avg_color(get_contours(frame, red), red)
+        imgs[3] = get_avg_color(get_contours(frame, red, sum_max=800), red)
 
         print('+{:.3f}: imgs'.format((time.time() - st) * 1000))
 
