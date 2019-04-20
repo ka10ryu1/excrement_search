@@ -6,6 +6,8 @@ import argparse
 import cv2
 import numpy as np
 
+from pathlib import Path
+
 
 def command():
     parser = argparse.ArgumentParser(description='USB Camera Test')
@@ -26,6 +28,16 @@ def resize(img, rate, flg=cv2.INTER_NEAREST):
     return cv2.resize(img, size, flg)
 
 
+def save_all_img(save_dir, imgs):
+    save_dir = Path(save_dir)
+    if not save_dir.exists():
+        save_dir.mkdir(parents=True)
+
+    for i, img in enumerate(imgs):
+        path = save_dir / 'img_{:04}.jpg'.format(i)
+        cv2.imwrite(str(path), img)
+
+
 def full_screen(winname, img):
     cv2.namedWindow(winname, cv2.WINDOW_NORMAL)
     cv2.setWindowProperty(
@@ -34,11 +46,16 @@ def full_screen(winname, img):
     cv2.imshow(winname, img)
 
 
-def add_text(img, text, h, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX):
+def add_text(img, text, h=10, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX):
     bk = vline(img, h)
     cv2.putText(bk, text, (10, h - 10), font, 1, color, 1, cv2.LINE_AA)
     dst = np.vstack([img, bk])
     return dst
+
+
+def add_text_direct(img, text, h=10, color=(255, 255, 255), font=cv2.FONT_HERSHEY_SIMPLEX):
+    cv2.putText(img, text, (10, h - 10), font, 1, color, 1, cv2.LINE_AA)
+    return img
 
 
 def vline(img, h):
@@ -64,18 +81,20 @@ def select_key(A, B, C, D, w_time=5):
     # Escでループを抜ける
     if key == 27:
         print('exit!')
-        return False, A, B, C, D
+        return 1, A, B, C, D
     # sキーで画像を保存する
     elif key == ord('q'):
-        return True, B, A, C, D
+        return 0, B, A, C, D
     elif key == ord('a'):
-        return True, C, B, A, D
+        return 0, C, B, A, D
     elif key == ord('z'):
-        return True, D, B, C, A
+        return 0, D, B, C, A
     elif key == ord('s'):
-        return True, 0, 1, 2, 3
+        return 0, 0, 1, 2, 3
+    elif key == ord('x'):
+        return 10, A, B, C, D
 
-    return True, A, B, C, D
+    return 0, A, B, C, D
 
 
 def main(args):
@@ -96,6 +115,8 @@ def main(args):
     bk = None
     v_img = None
     h_img = None
+    cnt = 9999
+    save_imgs = list()
     while True:
         # カメラキャプチャ
         try:
@@ -105,10 +126,10 @@ def main(args):
             time.sleep(1)
             continue
 
-#        if not ret:
-#            print('not ret')
-#            time.sleep(1)
-#            continue
+        if not ret:
+            print('not ret')
+            time.sleep(1)
+            continue
 
         print('+{:.3f}: cap'.format((time.time() - st) * 1000))
         b, g, r = cv2.split(frame)
@@ -139,6 +160,13 @@ def main(args):
 
         # print(img1.shape, img2.shape, mini1.shape)
         img = np.hstack([img1, h_img, img2])
+        if cnt > ~ 0 and cnt <= 120:
+            img = add_text_direct(
+                img, 'REC {:03}'.format(cnt), 40, color=(0, 0, 255)
+            )
+            save_imgs.append(img)
+            cnt += 1
+
         full_screen('frame', resize(img, rate))
 
         print('+{:.3f}: view'.format((time.time() - st) * 1000))
@@ -147,10 +175,14 @@ def main(args):
         key, A, B, C, D = select_key(A, B, C, D)
         print('{:.3f}'.format((time.time() - st) * 1000))
         st = time.time()
-        if not key:
+        if key == 1:
             break
+        elif key == 10:
+            save_imgs = list()
+            cnt = 0
 
     # 終了処理
+    save_all_img('out', save_imgs)
     cap.release()
     cv2.destroyAllWindows()
 
@@ -162,4 +194,5 @@ if __name__ == '__main__':
     print('[ a ] Change middle image')
     print('[ z ] Change bottom image')
     print('[ s ] Reset')
+    print('[ x ] Rec start')
     main(command())

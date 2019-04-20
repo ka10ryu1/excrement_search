@@ -6,7 +6,8 @@ import argparse
 import cv2
 import numpy as np
 
-from capture import resize, full_screen, add_text, vline, hline, select_key
+from capture import resize, full_screen, add_text, add_text_direct
+from capture import vline, hline, select_key, save_all_img
 
 
 def command():
@@ -93,6 +94,8 @@ def main(args):
     bk = None
     v_img = None
     h_img = None
+    cnt = -1
+    save_imgs = list()
     while True:
         # カメラキャプチャ
         try:
@@ -138,6 +141,13 @@ def main(args):
         print('+{:.3f}: fix'.format((time.time() - st) * 1000))
 
         img = np.hstack([h_img, img1, h_img, img2, h_img])
+        if cnt > ~ 0 and cnt <= 120:
+            img = add_text_direct(
+                img, 'REC {:03}'.format(cnt), 40, color=(0, 0, 255)
+            )
+            save_imgs.append(img)
+            cnt += 1
+
         full_screen('frame', resize(img, rate))
 
         print('+{:.3f}: view'.format((time.time() - st) * 1000))
@@ -146,10 +156,14 @@ def main(args):
         key, A, B, C, D = select_key(A, B, C, D)
         print('{:.3f}'.format((time.time() - st) * 1000))
         st = time.time()
-        if not key:
+        if key == 1:
             break
+        elif key == 10:
+            save_imgs = list()
+            cnt = 0
 
     # 終了処理
+    save_all_img('out', save_imgs)
     cap.release()
     cv2.destroyAllWindows()
 
@@ -161,4 +175,5 @@ if __name__ == '__main__':
     print('[ a ] Change middle image')
     print('[ z ] Change bottom image')
     print('[ s ] Reset')
+    print('[ x ] Rec start')
     main(command())
